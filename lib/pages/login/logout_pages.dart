@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:sn_progress_dialog/sn_progress_dialog.dart';
+
 import 'package:taxis/pages/components/bottom_navbar.dart';
 import 'package:taxis/pages/global_variables.dart';
+import 'package:taxis/pages/api/restful.dart';
 
 class LogoutPage extends StatefulWidget {
   const LogoutPage({Key? key}) : super(key: key);
@@ -10,6 +13,36 @@ class LogoutPage extends StatefulWidget {
 
 class _LogoutPageState extends State<LogoutPage> {
   final _formkey = GlobalKey<FormState>();
+  String res = '';
+
+  _normalProgress(context) async {
+    /// Create progress dialog
+    ProgressDialog pd = ProgressDialog(context: context);
+
+    /// Set options
+    /// Max and msg required
+    pd.show(
+        max: 100,
+        msg: 'Connecting...',
+        progressType: ProgressType.valuable,
+        backgroundColor: Colors.grey,
+        progressValueColor: const Color(0xff3550B4),
+        progressBgColor: Colors.transparent,
+        msgColor: Colors.white,
+        barrierDismissible: true,
+        hideValue: true,
+        valueColor: Colors.white);
+
+    res = await logout();
+    for (int i = 0; i <= 100; i++) {
+      /// You don't need to update state, just pass the value.
+      /// Only value required
+      pd.update(value: i);
+      i++;
+    }
+    pd.close();
+    return res;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -80,8 +113,26 @@ class _LogoutPageState extends State<LogoutPage> {
                               horizontal: 30, vertical: 10),
                         ),
                         child: const Text('Logout'),
-                        onPressed: () {
+                        onPressed: () async {
                           Navigator.pushNamed(context, '/login');
+                          res = await _normalProgress(context);
+                          // Navigator.of(context).pop();
+                          if (res == 'loggedout') {
+                            // ignore: use_build_context_synchronously
+                            Navigator.of(context, rootNavigator: true)
+                                .pushNamed("/login");
+                          } else if (res == 'connectionFailed') {
+                            // ignore: use_build_context_synchronously
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text('Connection failed')),
+                            );
+                          } else {
+                            // ignore: use_build_context_synchronously
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Unkwon error')),
+                            );
+                          }
                         },
                       ),
                     ),

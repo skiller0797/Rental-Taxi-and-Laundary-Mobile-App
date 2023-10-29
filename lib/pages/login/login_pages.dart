@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+// import 'package:fluttertoast/fluttertoast.dart';
+import 'package:sn_progress_dialog/sn_progress_dialog.dart';
+
 import 'package:taxis/pages/global_variables.dart';
+import 'package:taxis/pages/api/restful.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -14,6 +18,41 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController passwordController = TextEditingController();
 
   bool rememberMe = false;
+  String res1 = '';
+  String res = '';
+  bool connected = false;
+
+  _normalProgress(context) async {
+    /// Create progress dialog
+    ProgressDialog pd = ProgressDialog(context: context);
+
+    /// Set options
+    /// Max and msg required
+    pd.show(
+        max: 100,
+        msg: 'Connecting...',
+        progressType: ProgressType.valuable,
+        backgroundColor: Colors.grey,
+        progressValueColor: const Color(0xff3550B4),
+        progressBgColor: Colors.transparent,
+        msgColor: Colors.white,
+        barrierDismissible: true,
+        hideValue: true,
+        valueColor: Colors.white);
+
+    res1 = await login(emailController.text, passwordController.text);
+    for (int i = 0; i <= 100; i++) {
+      /// You don't need to update state, just pass the value.
+      /// Only value required
+      pd.update(value: i);
+      i++;
+      if (i >= 100) {
+        connected = true;
+      }
+    }
+    pd.close();
+    return res1;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,14 +92,14 @@ class _LoginPageState extends State<LoginPage> {
                             backgroundColor: Colors.transparent,
                             foregroundColor: Colors.white,
                             focusColor: Colors.green,
-                            child: const Text('Login'),
-                            shape: UnderlineInputBorder(
+                            shape: const UnderlineInputBorder(
                               borderSide: BorderSide(
                                 color: Colors
                                     .white, // Set the color for the bottom border
                                 width: 2, // Set the width for the bottom border
                               ),
                             ),
+                            child: const Text('Login'),
                           )),
                       SizedBox(
                           height: 35,
@@ -177,10 +216,55 @@ class _LoginPageState extends State<LoginPage> {
                             horizontal: 30, vertical: 10),
                       ),
                       child: const Text('Login'),
-                      onPressed: () {
+                      onPressed: () async {
                         if (_formkey.currentState!.validate()) {
-                          // Navigate the user to the Home page
-                          Navigator.pushNamed(context, '/salesreport');
+                          res = await _normalProgress(context);
+                          // Navigator.of(context).pop();
+                          if (res == 'invalidInfo') {
+                            //ignore: use_build_context_synchronously
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text('Invalid user info')),
+                            );
+                            // ignore: use_build_context_synchronously
+                            // Fluttertoast.showToast(
+                            //     msg: 'Invalid user info',
+                            //     toastLength: Toast.LENGTH_SHORT,
+                            //     gravity: ToastGravity.BOTTOM,
+                            //     backgroundColor: Colors.red,
+                            //     textColor: Colors.white,
+                            //     fontSize: 12.0);
+                          } else if (res == 'notRegistered') {
+                            // ignore: use_build_context_synchronously
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text('User not registered')),
+                            );
+                          } else if (res == 'passwordIncorrect') {
+                            // ignore: use_build_context_synchronously
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text('Password incorrect')),
+                            );
+                          } else if (res == 'loginSuccess') {
+                            if (connected) {
+                              // ignore: use_build_context_synchronously
+                              Navigator.of(context, rootNavigator: true)
+                                  .pushNamed("/salesreport");
+                            }
+                          } else if (res == 'connectionFailed') {
+                            // ignore: use_build_context_synchronously
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text('Connection Failed')),
+                            );
+                          } else {
+                            // ignore: use_build_context_synchronously
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Unkwon error')),
+                            );
+                          }
+                          // Navigator.pushNamed(context, '/salesreport');
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text('Please fill input')),
