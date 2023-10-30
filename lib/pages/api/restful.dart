@@ -1,7 +1,8 @@
 import 'dart:convert';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
-Future<String> login(String email, String password) async {
+Future<String> login(String email, String password, bool rememberMe) async {
   try {
     final response = await http.post(
       Uri.parse('http://192.168.145.82:3000/api/signin'),
@@ -11,9 +12,21 @@ Future<String> login(String email, String password) async {
       body: jsonEncode(<String, String>{
         'email': email,
         'password': password,
+        'remember_me': rememberMe.toString(),
       }),
     );
     if (response.statusCode == 200) {
+      final cookie = response.headers['set-cookie'];
+      const FlutterSecureStorage secureStorage = FlutterSecureStorage();
+
+      if (rememberMe) {
+        await secureStorage.write(key: 'cookie', value: cookie);
+        await secureStorage.write(key: 'email', value: email);
+        await secureStorage.write(key: 'password', value: password);
+        await secureStorage.write(key: 'rememberMe', value: 'true');
+      } else {
+        await secureStorage.deleteAll();
+      }
       var data = jsonDecode(response.body.toString());
       return data['message'];
     } else {
@@ -22,7 +35,7 @@ Future<String> login(String email, String password) async {
       return 'connectionFailed';
     }
   } catch (e) {
-    return 'connectionFailed';
+    return 'Unknow error';
   }
 }
 
@@ -41,6 +54,7 @@ Future<String> signup(String fullname, String email, String password) async {
     );
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body.toString());
+
       return data['message'];
     } else {
       // Error handling

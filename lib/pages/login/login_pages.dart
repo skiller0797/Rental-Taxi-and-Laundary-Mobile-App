@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 // import 'package:fluttertoast/fluttertoast.dart';
 import 'package:sn_progress_dialog/sn_progress_dialog.dart';
 
@@ -16,12 +19,34 @@ class _LoginPageState extends State<LoginPage> {
 
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  final secureStorage = const FlutterSecureStorage();
 
-  bool rememberMe = false;
-  String res1 = '';
+  bool _rememberMe = false;
+
   String res = '';
   bool connected = false;
 
+  @override
+  void initState() {
+    super.initState();
+    _getStoredCredentials();
+  }
+
+  Future<void> _getStoredCredentials() async {
+    final email = await secureStorage.read(key: 'email');
+    final password = await secureStorage.read(key: 'password');
+    final rememberMe = await secureStorage.read(key: 'rememberMe');
+    // ... process the cookie value
+    if (email != null && password != null && rememberMe == 'true') {
+      setState(() {
+        emailController.text = email;
+        passwordController.text = password;
+        _rememberMe = true;
+      });
+    }
+  }
+
+// Call the async function
   _normalProgress(context) async {
     /// Create progress dialog
     ProgressDialog pd = ProgressDialog(context: context);
@@ -40,8 +65,9 @@ class _LoginPageState extends State<LoginPage> {
         hideValue: true,
         valueColor: Colors.white);
 
-    res1 = await login(emailController.text, passwordController.text);
-    for (int i = 0; i <= 100; i++) {
+    res =
+        await login(emailController.text, passwordController.text, _rememberMe);
+    for (int i = 0; i <= 300; i++) {
       /// You don't need to update state, just pass the value.
       /// Only value required
       pd.update(value: i);
@@ -51,7 +77,7 @@ class _LoginPageState extends State<LoginPage> {
       }
     }
     pd.close();
-    return res1;
+    return res;
   }
 
   @override
@@ -181,10 +207,10 @@ class _LoginPageState extends State<LoginPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Checkbox(
-                        value: rememberMe,
+                        value: _rememberMe,
                         onChanged: (val) {
                           setState(() {
-                            rememberMe = val!;
+                            _rememberMe = val!;
                           });
                         }),
                     const Text('Remember Me'),
