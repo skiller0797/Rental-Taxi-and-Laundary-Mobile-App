@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 // ignore: depend_on_referenced_packages
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 // ignore: depend_on_referenced_packages
 import 'package:form_builder_validators/form_builder_validators.dart';
+import 'package:sn_progress_dialog/progress_dialog.dart';
+import 'package:taxis/pages/api/restful.dart';
 import 'package:taxis/pages/global_variables.dart';
 // ignore: depend_on_referenced_packages
 import 'package:intl_phone_field/intl_phone_field.dart';
@@ -11,13 +14,70 @@ import 'package:intl_phone_field/intl_phone_field.dart';
 class FormAddLaundary extends StatelessWidget {
   final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>();
 
+  List<String> machineItems = ['Option 1', 'Option 2', 'Option 3'];
+  List<String> discountItems = ['0 %', '25 %', '50 %', '75 %', '100 %'];
+
+  TextEditingController customernameController = TextEditingController();
+  TextEditingController phonenumberController = TextEditingController();
+  TextEditingController weightController = TextEditingController();
+  TextEditingController soapController = TextEditingController();
+
+  final secureStorage = const FlutterSecureStorage();
+
   double fieldHeight = 45;
   double fieldLeftPadding = 15;
+  String phonenumber = '';
+  String res = '';
+  String selectedMachine = 'Option 1';
+  String selectedDiscount = '0 %';
+
+  String email = '';
+
+  _normalProgress(context) async {
+    /// Create progress dialog
+    ProgressDialog pd = ProgressDialog(context: context);
+
+    /// Set options
+    /// Max and msg required
+    pd.show(
+        max: 100,
+        msg: 'Connecting...',
+        progressType: ProgressType.valuable,
+        backgroundColor: Colors.grey,
+        progressValueColor: const Color(0xff3550B4),
+        progressBgColor: Colors.transparent,
+        msgColor: Colors.white,
+        barrierDismissible: true,
+        hideValue: true,
+        valueColor: Colors.white);
+
+    res = await addloundary(
+        customernameController.text,
+        phonenumber,
+        weightController.text,
+        soapController.text,
+        selectedMachine,
+        selectedDiscount,
+        email);
+    for (int i = 0; i <= 10000; i++) {
+      /// You don't need to update state, just pass the value.
+      /// Only value required
+      pd.update(value: i);
+      i++;
+    }
+    pd.close();
+    return res;
+  }
+
+  Future<void> _getEmail() async {
+    email = (await secureStorage.read(key: 'email'))!;
+  }
 
   FormAddLaundary({super.key});
 
   @override
   Widget build(BuildContext context) {
+    _getEmail();
     return FormBuilder(
       key: _formKey,
       child: Wrap(
@@ -26,6 +86,7 @@ class FormAddLaundary extends StatelessWidget {
           SizedBox(
               height: fieldHeight,
               child: FormBuilderTextField(
+                controller: customernameController,
                 cursorColor: Colors.green,
                 name: 'fullname',
                 style: const TextStyle(
@@ -70,54 +131,6 @@ class FormAddLaundary extends StatelessWidget {
                   FormBuilderValidators.required(),
                 ]),
               )),
-          // SizedBox(
-          //     height: fieldHeight,
-          //     child: FormBuilderTextField(
-          //       cursorColor: Colors.green,
-          //       name: 'phonenumber',
-          //       style: TextStyle(
-          //         fontSize: 15.0, // Customize font size
-          //         color: Colors.black, // Customize font color
-          //       ),
-          //       keyboardType: TextInputType.phone,
-          //       decoration: InputDecoration(
-          //         labelText: 'Phone Number',
-          //         labelStyle: TextStyle(color: Colors.black, fontSize: 15),
-          //         contentPadding: EdgeInsets.only(
-          //             top: 2, right: 2, bottom: 0, left: fieldLeftPadding),
-          //         hintText: '169324987457',
-          //         hintStyle: TextStyle(
-          //           fontSize: 10.0, // Customize font size
-          //           color: Colors.grey, // Customize font color
-          //         ),
-          //         border: OutlineInputBorder(
-          //             borderRadius: BorderRadius.circular(15.0)),
-          //         enabledBorder: OutlineInputBorder(
-          //             borderSide: BorderSide(
-          //                 color:
-          //                     Colors.black), // Customize enabled border color
-          //             borderRadius: BorderRadius.circular(15.0)),
-          //         focusedBorder: OutlineInputBorder(
-          //           borderRadius: BorderRadius.circular(15.0),
-          //           borderSide: BorderSide(
-          //               color: Colors.green,
-          //               width: 2), // Customize focused border color
-          //         ),
-          //         errorBorder: OutlineInputBorder(
-          //           borderSide: BorderSide(
-          //               color: Colors.red), // Customize error border color
-          //         ),
-          //         errorStyle: TextStyle(color: Colors.red, fontSize: 10),
-          //       ),
-          //       onChanged: (val) {
-          //         _formKey.currentState!.fields['phonenumber']!.validate();
-          //       },
-          //       validator: FormBuilderValidators.compose([
-          //         FormBuilderValidators.required(
-          //             errorText: 'Phone number is required.'),
-          //         FormBuilderValidators.numeric()
-          //       ]),
-          //     )),
           SizedBox(
               height: 60,
               child: Theme(
@@ -156,8 +169,8 @@ class FormAddLaundary extends StatelessWidget {
                     errorStyle:
                         const TextStyle(color: Colors.red, fontSize: 10),
                   ),
-                  onChanged: (phoneNumber) {
-                    print(phoneNumber.completeNumber);
+                  onChanged: (value) {
+                    phonenumber = value.completeNumber;
                   },
                 ),
               )),
@@ -166,6 +179,7 @@ class FormAddLaundary extends StatelessWidget {
               child: FormBuilderTextField(
                 cursorColor: Colors.green,
                 name: 'weight',
+                controller: weightController,
                 style: const TextStyle(
                   fontSize: 15.0, // Customize font size
                   color: Colors.black, // Customize font color
@@ -212,6 +226,7 @@ class FormAddLaundary extends StatelessWidget {
               child: FormBuilderTextField(
                 cursorColor: Colors.green,
                 name: 'soap',
+                controller: soapController,
                 style: const TextStyle(
                   fontSize: 15.0, // Customize font size
                   color: Colors.black, // Customize font color
@@ -258,17 +273,12 @@ class FormAddLaundary extends StatelessWidget {
               child: FormBuilderDropdown(
                 name: 'machine',
                 style: const TextStyle(color: Colors.black),
-                items: const [
-                  DropdownMenuItem(
-                    value: 'option1',
-                    child: Text('Option 1'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'option2',
-                    child: Text('Option 2'),
-                  ),
-                  // Add more options as needed
-                ],
+                items: machineItems.map((String item) {
+                  return DropdownMenuItem(
+                    value: item,
+                    child: Text(item),
+                  );
+                }).toList(),
                 decoration: InputDecoration(
                     contentPadding: EdgeInsets.only(
                         top: 2, right: 2, bottom: 2, left: fieldLeftPadding),
@@ -295,6 +305,7 @@ class FormAddLaundary extends StatelessWidget {
                     )),
                 onChanged: (val) {
                   _formKey.currentState!.fields['machine']!.validate();
+                  selectedMachine = val!;
                 },
                 validator: FormBuilderValidators.compose([
                   FormBuilderValidators.required(),
@@ -310,17 +321,12 @@ class FormAddLaundary extends StatelessWidget {
               child: FormBuilderDropdown(
                 name: 'discount',
                 style: const TextStyle(color: Colors.black),
-                items: const [
-                  DropdownMenuItem(
-                    value: 'option1',
-                    child: Text('Option 1'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'option2',
-                    child: Text('Option 2'),
-                  ),
-                  // Add more options as needed
-                ],
+                items: discountItems.map((String item) {
+                  return DropdownMenuItem(
+                    value: item,
+                    child: Text(item),
+                  );
+                }).toList(),
                 decoration: InputDecoration(
                     contentPadding: EdgeInsets.only(
                         top: 2, right: 2, bottom: 2, left: fieldLeftPadding),
@@ -347,6 +353,7 @@ class FormAddLaundary extends StatelessWidget {
                     )),
                 onChanged: (val) {
                   _formKey.currentState!.fields['discount']!.validate();
+                  selectedDiscount = val!;
                 },
                 validator: FormBuilderValidators.compose([
                   FormBuilderValidators.required(),
@@ -387,28 +394,49 @@ class FormAddLaundary extends StatelessWidget {
               height: 50,
               padding: const EdgeInsets.only(top: 10),
               child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.black,
-                  textStyle: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.black,
+                    textStyle: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
                   ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                child: const Text('Submit'),
-                onPressed: () {
-                  // Validate and save the form values
-                  _formKey.currentState?.saveAndValidate();
-                  debugPrint(_formKey.currentState?.value.toString());
-
-                  // On another side, can access all field values without saving form with instantValues
-                  _formKey.currentState?.validate();
-                  debugPrint(_formKey.currentState?.instantValue.toString());
-                },
-              ),
+                  child: const Text('Submit'),
+                  onPressed: () async {
+                    if (_formKey.currentState!.validate()) {
+                      res = await _normalProgress(context);
+                      // Navigator.of(context).pop();
+                      if (res == 'invalidInfo') {
+                        //ignore: use_build_context_synchronously
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Invalid user info')),
+                        );
+                      } else if (res == 'insertedSuccess') {
+                        // ignore: use_build_context_synchronously
+                        Navigator.of(context, rootNavigator: true)
+                            .pushNamed("/addlaundrydone");
+                      } else if (res == 'connectionFailed') {
+                        // ignore: use_build_context_synchronously
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Connection Failed')),
+                        );
+                      } else {
+                        // ignore: use_build_context_synchronously
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Unkwon error')),
+                        );
+                      }
+                      // Navigator.pushNamed(context, '/salesreport');
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Please fill input')),
+                      );
+                    }
+                  }),
             ),
           ),
         ],

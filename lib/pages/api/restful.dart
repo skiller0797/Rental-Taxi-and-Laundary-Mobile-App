@@ -25,7 +25,9 @@ Future<String> login(String email, String password, bool rememberMe) async {
         await secureStorage.write(key: 'password', value: password);
         await secureStorage.write(key: 'rememberMe', value: 'true');
       } else {
-        await secureStorage.deleteAll();
+        await secureStorage.delete(key: 'cookie');
+        await secureStorage.delete(key: 'password');
+        await secureStorage.delete(key: 'rememberMe');
       }
       var data = jsonDecode(response.body.toString());
       return data['message'];
@@ -76,6 +78,43 @@ Future<String> logout() async {
     if (response.statusCode == 200) {
       return 'loggedout';
     } else {
+      return 'connectionFailed';
+    }
+  } catch (e) {
+    return 'connectionFailed';
+  }
+}
+
+Future<String> addloundary(
+    String customername,
+    String phonenumber,
+    String weight,
+    String soap,
+    String machine,
+    String discount,
+    String email) async {
+  try {
+    final response = await http.post(
+      Uri.parse('http://192.168.145.82:3000/api/addlaundary'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'customername': customername,
+        'phonenumber': phonenumber,
+        'soap': soap,
+        'weight': weight,
+        'machine': machine,
+        'discount': discount,
+        'email': email
+      }),
+    );
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body.toString());
+      return data['message'];
+    } else {
+      // Error handling
+      // throw Exception('Connection failed');
       return 'connectionFailed';
     }
   } catch (e) {
