@@ -3,12 +3,16 @@ import 'package:flutter/material.dart';
 class SalesReportPanel extends StatelessWidget {
   final String title;
   final String amount;
+  final String count;
+  final String loads;
   final Color background;
 
   const SalesReportPanel(
       {super.key,
       required this.title,
       required this.amount,
+      required this.count,
+      required this.loads,
       required this.background});
 
   @override
@@ -47,15 +51,37 @@ class SalesReportPanel extends StatelessWidget {
           Row(children: [
             Text(
               amount,
-              style: const TextStyle(color: Colors.black, fontSize: 20),
+              style: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold),
             ),
           ]),
-          const Row(
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               Text(
-                'balance',
-                style: TextStyle(color: Colors.black, fontSize: 10),
-              )
+                'Orders: ${count}',
+                style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15),
+              ),
+              Text(
+                'Loads: $loads',
+                style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15),
+              ),
+              IconButton(
+                  onPressed: () {
+                    Navigator.of(context).pushNamed('/orderlist');
+                  },
+                  icon: const Icon(
+                    Icons.more_horiz,
+                    color: Colors.black, // Set the desired icon color here
+                  ))
             ],
           )
         ],

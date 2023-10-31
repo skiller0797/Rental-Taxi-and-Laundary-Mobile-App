@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:taxis/pages/api/restful.dart';
 import 'package:taxis/pages/components/app_bar.dart';
 import 'package:taxis/pages/components/bottom_navbar.dart';
 import 'package:taxis/pages/components/sales_report_panel.dart';
@@ -11,40 +12,71 @@ class SalesReportPage extends StatefulWidget {
 }
 
 class _SalesReportPageState extends State<SalesReportPage> {
-  // final List<Widget> _pages = [
-  //   HomePage(),
-  //   NotificationsPage(),
-  //   ProfilePage(),
-  // ];
+  Map<String, dynamic> salesData = {};
+  @override
+  void initState() {
+    super.initState();
+    fetchData();
+  }
+
+  Future<String> fetchData() async {
+    // Simulating an asynchronous request
+    final responsData = await getSalesData();
+    setState(() {
+      salesData = {
+        'Today': {
+          'subkey': 'today',
+          'amount': '₱ 999999',
+          'count': responsData['todayCount'].toString(),
+          'loads': responsData['todayLoads'].toString(),
+          'background': Colors.white,
+        },
+        '7 days': {
+          'subkey': 'week',
+          'amount': '₱ 999999',
+          'count': responsData['weekCount'].toString(),
+          'loads': responsData['weekLoads'].toString(),
+          'background': const Color(0xFFFBA38F),
+        },
+        '30 days': {
+          'subkey': 'month',
+          'amount': '₱ 999999',
+          'count': responsData['monthCount'].toString(),
+          'loads': responsData['monthLoads'].toString(),
+          'background': thirdColor,
+        },
+      };
+    });
+
+    return 'Data from the request';
+  }
+
   @override
   Widget build(BuildContext context) {
+    List<Widget> salesReportPanels = salesData.entries.map((entry) {
+      String title = entry.key;
+      String amount = entry.value['amount'];
+      String count = entry.value['count'];
+      String loads = entry.value['loads'];
+      Color background = entry.value['background'];
+
+      return SalesReportPanel(
+        title: title,
+        amount: amount,
+        count: count,
+        loads: loads,
+        background: background,
+      );
+    }).toList();
     return Scaffold(
       appBar: AppBarWidget(
         title1: 'Sales',
         title2: '',
       ),
-      body: const Center(
+      body: Center(
         child: Padding(
-          padding: EdgeInsets.all(20),
-          child: Column(
-            children: [
-              SalesReportPanel(
-                title: 'Today',
-                amount: 'P 999999',
-                background: Colors.white,
-              ),
-              SalesReportPanel(
-                title: '7 days',
-                amount: 'P 999999',
-                background: Color(0xFFFBA38F),
-              ),
-              SalesReportPanel(
-                title: '30 days',
-                amount: 'P 999999',
-                background: thirdColor,
-              )
-            ],
-          ),
+          padding: const EdgeInsets.all(20),
+          child: ListView(children: salesReportPanels),
         ),
       ),
       bottomNavigationBar: const MyBottomNavigationBar(),

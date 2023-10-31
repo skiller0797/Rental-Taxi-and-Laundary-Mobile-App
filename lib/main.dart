@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+
 import 'package:taxis/pages/login/login_pages.dart';
 import 'package:taxis/pages/login/logout_pages.dart';
 import 'package:taxis/pages/register/register_pages.dart';
 import 'package:taxis/pages/sales/add_taxi_done_page.dart';
+import 'package:taxis/pages/sales/order_list_page.dart';
 import 'package:taxis/pages/sales/sales_report_page.dart';
 import 'package:taxis/pages/sales/add_for_page.dart';
 import 'package:taxis/pages/sales/add_laundry_page.dart';
@@ -24,6 +26,7 @@ final routes = {
   '/addlaundrydone': (context) => const AddLaundryDonePage(),
   '/addtaxi': (context) => const AddTaxiPage(),
   '/addtaxidone': (context) => const AddTaxiDonePage(),
+  '/orderlist': (context) => const OrderListPage(),
 };
 
 class MyApp extends StatelessWidget {

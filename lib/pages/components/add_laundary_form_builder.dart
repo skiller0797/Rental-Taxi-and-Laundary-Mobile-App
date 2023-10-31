@@ -27,11 +27,13 @@ class FormAddLaundary extends StatelessWidget {
   double fieldHeight = 45;
   double fieldLeftPadding = 15;
   String phonenumber = '';
-  String res = '';
+
   String selectedMachine = 'Option 1';
   String selectedDiscount = '0 %';
 
   String email = '';
+  Map<String, dynamic> response = {};
+  Map<String, dynamic> res = {};
 
   _normalProgress(context) async {
     /// Create progress dialog
@@ -51,7 +53,7 @@ class FormAddLaundary extends StatelessWidget {
         hideValue: true,
         valueColor: Colors.white);
 
-    res = await addloundary(
+    response = await addloundary(
         customernameController.text,
         phonenumber,
         weightController.text,
@@ -66,7 +68,7 @@ class FormAddLaundary extends StatelessWidget {
       i++;
     }
     pd.close();
-    return res;
+    return response;
   }
 
   Future<void> _getEmail() async {
@@ -409,17 +411,19 @@ class FormAddLaundary extends StatelessWidget {
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
                       res = await _normalProgress(context);
+                      print(res);
                       // Navigator.of(context).pop();
-                      if (res == 'invalidInfo') {
+                      if (res['message'] == 'invalidInfo') {
                         //ignore: use_build_context_synchronously
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Invalid user info')),
                         );
-                      } else if (res == 'insertedSuccess') {
+                      } else if (res['message'] == 'insertedSuccess') {
                         // ignore: use_build_context_synchronously
-                        Navigator.of(context, rootNavigator: true)
-                            .pushNamed("/addlaundrydone");
-                      } else if (res == 'connectionFailed') {
+                        Navigator.of(context, rootNavigator: true).pushNamed(
+                            "/addlaundrydone",
+                            arguments: {'laundaryCount': res['count']});
+                      } else if (res['message'] == 'connectionFailed') {
                         // ignore: use_build_context_synchronously
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Connection Failed')),

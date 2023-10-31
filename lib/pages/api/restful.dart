@@ -85,7 +85,7 @@ Future<String> logout() async {
   }
 }
 
-Future<String> addloundary(
+Future<dynamic> addloundary(
     String customername,
     String phonenumber,
     String weight,
@@ -111,13 +111,33 @@ Future<String> addloundary(
     );
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body.toString());
-      return data['message'];
+      return data;
     } else {
       // Error handling
       // throw Exception('Connection failed');
-      return 'connectionFailed';
+      return {'message': 'connectionFailed'};
     }
   } catch (e) {
-    return 'connectionFailed';
+    return {'message': 'Unknow error'};
+  }
+}
+
+Future<dynamic> getSalesData() async {
+  try {
+    final response = await http.get(
+      Uri.parse('http://192.168.145.82:3000/api/getsalesdata'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    );
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body.toString());
+      return data;
+    } else {
+      // Error handling
+      return {'message': 'connectionFailed'};
+    }
+  } catch (e) {
+    return {'message': 'Unknow error'};
   }
 }

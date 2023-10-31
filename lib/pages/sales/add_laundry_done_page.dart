@@ -12,10 +12,15 @@ class AddLaundryDonePage extends StatefulWidget {
 }
 
 class _AddLaundryPageState extends State<AddLaundryDonePage> {
-  bool isChecked = false;
+  bool isFreeChecked = false;
+  bool isDiscountChecked = false;
 
   @override
   Widget build(BuildContext context) {
+    Map<String, dynamic>? arguments =
+        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+    String count = arguments['laundaryCount'].toString();
+
     return Scaffold(
       appBar: AppBarWidget(title1: 'Status ', title2: '(Laundary)'),
       body: Center(
@@ -52,7 +57,7 @@ class _AddLaundryPageState extends State<AddLaundryDonePage> {
                   child: Row(
                     children: [
                       Checkbox(
-                        value: isChecked,
+                        value: int.parse(count) == 1 ? true : false,
                         checkColor: Colors.black,
                         activeColor: Colors.blue,
                         fillColor: MaterialStateProperty.resolveWith<Color>(
@@ -67,7 +72,7 @@ class _AddLaundryPageState extends State<AddLaundryDonePage> {
                         ),
                         onChanged: (value) {
                           setState(() {
-                            isChecked = value!;
+                            // isFreeChecked = value!;
                           });
                         },
                       ),
@@ -93,7 +98,7 @@ class _AddLaundryPageState extends State<AddLaundryDonePage> {
                   child: Row(
                     children: [
                       Checkbox(
-                        value: isChecked,
+                        value: (int.parse(count) % 10 == 0) ? true : false,
                         checkColor: Colors.black,
                         activeColor: Colors.blue,
                         fillColor: MaterialStateProperty.resolveWith<Color>(
@@ -108,7 +113,7 @@ class _AddLaundryPageState extends State<AddLaundryDonePage> {
                         ),
                         onChanged: (value) {
                           setState(() {
-                            isChecked = value!;
+                            // isDiscountChecked = value!;
                           });
                         },
                       ),
@@ -119,9 +124,9 @@ class _AddLaundryPageState extends State<AddLaundryDonePage> {
                             fontWeight: FontWeight.bold,
                             fontSize: 15),
                       ),
-                      const Text(
-                        '(10 Times Buy)',
-                        style: TextStyle(
+                      Text(
+                        ' $count times',
+                        style: const TextStyle(
                             color: Colors.black,
                             fontWeight: FontWeight.bold,
                             fontSize: 15),
@@ -160,7 +165,7 @@ class _AddLaundryPageState extends State<AddLaundryDonePage> {
                             )
                           ]),
                       onPressed: () {
-                        Navigator.pushNamed(context, '/addlaundrydone');
+                        Navigator.pushNamed(context, '/salesreport');
                       },
                     ),
                   ),
